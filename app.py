@@ -187,10 +187,9 @@ button {
 <div id="status"></div>
 
 <div class="input-area">
-    <textarea id="question"
-    placeholder="यहाँ अपना सवाल लिखें..."></textarea>
-
-    <button class="send" onclick="askAI()">Send</button>
+<textarea id="question" placeholder="यहाँ अपना सवाल लिखें..."></textarea>
+<button type="button" onclick="startVoice()">🎤 Mic</button>
+<button class="send" onclick="askAI()">Send</button>
 </div>
 
 <button class="clear" onclick="clearChat()">🗑️ Clear Chat</button>
@@ -295,6 +294,44 @@ document.getElementById("question").addEventListener(
 
     }
 );
+function startVoice() {
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        alert("आपके ब्राउज़र में Voice Recognition उपलब्ध नहीं है।");
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "hi-IN";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    recognition.onstart = function () {
+        document.getElementById("status").textContent = "🎤 सुन रहा हूँ...";
+    };
+
+    recognition.onresult = function (event) {
+        const text = event.results[0][0].transcript;
+        document.getElementById("question").value = text;
+        document.getElementById("status").textContent = "✅ आवाज़ लिख दी गई।";
+    };
+
+    recognition.onerror = function () {
+        document.getElementById("status").textContent =
+            "❌ आवाज़ पहचानने में समस्या हुई।";
+    };
+
+    recognition.onend = function () {
+        setTimeout(function () {
+            document.getElementById("status").textContent = "";
+        }, 2000);
+    };
+
+    recognition.start();
+}
 
 </script>
 
@@ -306,7 +343,6 @@ document.getElementById("question").addEventListener(
 @app.route("/")
 def home():
     return HTML
-
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
